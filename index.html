@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>App Store 国家/地区跳转链接</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f5f5f7;
+    --card: #ffffff;
+    --text: #1d1d1f;
+    --text-muted: #86868b;
+    --border: #e5e5ea;
+    --primary: #0071e3;
+    --primary-active: #0062c3;
+    --chip-bg: #e8e8ed;
+    --wechat-green: #1AAD19;
+    --success: #34c759;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000;
+      --card: #1c1c1e;
+      --text: #f5f5f7;
+      --text-muted: #86868b;
+      --border: #38383a;
+      --chip-bg: #2c2c2e;
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; padding: 16px 16px 60px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+    line-height: 1.5; background: var(--bg); color: var(--text);
+    transition: background 0.3s, color 0.3s;
+  }
+  h1 { font-size: 22px; margin: 0 0 8px; font-weight: 700; letter-spacing: -0.5px; }
+  .hint { margin: 0 0 16px; font-size: 13px; color: var(--text-muted); }
+
+  /* 顶部吸顶搜索区 */
+  .sticky {
+    position: sticky; top: 0; z-index: 20;
+    margin: 0 -16px; padding: 12px 16px;
+    background: rgba(245,245,247,.85);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid var(--border);
+    transition: box-shadow .2s;
+  }
+  .sticky.shadow {
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    .sticky { background: rgba(0,0,0,.85); }
+  }
+  .searchRow { display: flex; gap: 8px; }
+  input[type="search"] {
+    flex: 1; min-width: 0; padding: 10px 14px;
+    border: 1px solid var(--border); border-radius: 10px;
+    font-size: 15px; background: var(--card); color: var(--text);
+    -webkit-appearance: none; transition: border-color 0.2s;
+  }
+  input[type="search"]:focus { outline: none; border-color: var(--primary); }
+  
+  button {
+    padding: 0 14px; border: 0; border-radius: 10px;
+    background: var(--primary); color: #fff; font-size: 14px; font-weight: 500;
+    cursor: pointer; white-space: nowrap; font-family: inherit;
+    transition: background 0.2s, transform 0.1s ease;
+  }
+  button:active { transform: scale(0.96); background: var(--primary-active); }
+  button.secondary { background: var(--chip-bg); color: var(--text); }
+  button.secondary:active { background: var(--border); }
+  button.success { background: var(--success); }
+
+  /* 地区筛选 */
+  .chips { display: flex; gap: 8px; margin-top: 12px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip {
+    flex: 0 0 auto; padding: 6px 14px; border-radius: 999px; height: 32px;
+    background: var(--chip-bg); color: var(--text); font-size: 13px;
+    border: 1px solid transparent; font-weight: 500;
+  }
+  .chip.active { background: var(--primary); color: #fff; }
+
+  /* 列表头部统计 */
+  .count { margin: 16px 0 12px; font-size: 13px; color: var(--text-muted); font-weight: 500; }
+  
+  h2.groupTitle {
+    font-size: 15px; margin: 24px 0 12px; color: var(--text);
+    display: flex; align-items: center; gap: 8px; font-weight: 600;
+  }
+  h2.groupTitle span.n { font-size: 12px; color: var(--text-muted); font-weight: 400; background: var(--chip-bg); padding: 2px 8px; border-radius: 10px; }
+
+  /* 卡片列表 */
+  .list { display: grid; gap: 12px; }
+  .item {
+    display: flex; gap: 12px; align-items: center; justify-content: space-between;
+    padding: 16px; background: var(--card); border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid var(--border);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .item:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
+  @media (prefers-color-scheme: dark) {
+    .item { box-shadow: none; }
+    .item:hover { box-shadow: 0 0 0 1px rgba(255,255,255,.08); }
+  }
+  .info { min-width: 0; flex: 1; }
+  .name { font-weight: 600; font-size: 16px; display: flex; align-items: baseline; gap: 6px; }
+  .name em { font-style: normal; font-weight: 400; color: var(--text-muted); font-size: 13px; }
+  .meta { margin-top: 4px; font-size: 12px; color: var(--text-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .meta span.tag { display: inline-block; background: var(--chip-bg); padding: 1px 6px; border-radius: 6px; margin: 0 2px; cursor: pointer; }
+
+  /* 按钮组 */
+  .actions { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+  .actions button { padding: 8px 10px; font-size: 12.5px; border-radius: 8px; display: flex; align-items: center; gap: 4px; }
+  .actions button svg { width: 14px; height: 14px; fill: currentColor; }
+  
+  .empty { padding: 40px 20px; text-align: center; color: var(--text-muted); background: var(--card); border-radius: 14px; border: 1px dashed var(--border); }
+
+  /* Toast */
+  .toast {
+    position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%);
+    background: rgba(20,20,20,.88); color: #fff;
+    padding: 10px 18px; border-radius: 999px; font-size:14px;
+    backdrop-filter: blur(10px); z-index:99;
+    opacity:0; pointer-events:none; transition:opacity .25s;
+  }
+  .toast.show { opacity:1; }
+
+  /* 微信关注横幅 */
+  .wechat-banner {
+    margin-top: 40px;
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(26, 173, 25, 0.2);
+  }
+  @media (prefers-color-scheme: dark) {
+    .wechat-banner { box-shadow: 0 8px 24px rgba(26, 173, 25, 0.15); }
+  }
+  .wechat-banner img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  @media (max-width: 480px) {
+    .item { flex-direction: column; align-items: stretch; gap: 14px; }
+    .actions { flex-direction: row; width: 100%; }
+    .actions button { flex: 1; justify-content: center; padding: 10px 6px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>App Store 跳转链接</h1>
+<p class="hint">在 iPhone / iPad Safari 打开，点「打开」直接唤起 App Store；网页链接可发给其他人。</p>
+
+<div class="sticky" id="stickyWrap">
+  <div class="searchRow">
+    <input id="q" type="search" placeholder="搜索：美国 / us / 143441" autocomplete="off" autofocus>
+    <button id="btnClear" class="secondary">清空</button>
+  </div>
+  <div class="chips" id="chips"></div>
+</div>
+
+<div class="count" id="count"></div>
+<div id="content"></div>
+
+<div class="wechat-banner">
+  <img src="wechat.png" alt="微信搜一搜：MacOS管家" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=300x150&data=MacOS%E7%AE%A1%E5%AE%B6';">
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* cc, 英文名, 中文名, storefront_id, 地区分组 */
+const DATA = [
+  ["af","Afghanistan","阿富汗","143610","apac"],["au","Australia","澳大利亚","143460","apac"],["bn","Brunei","文莱","143560","apac"],["bt","Bhutan","不丹","143577","apac"],["cn","China","中国大陆","143465","apac"],["fj","Fiji","斐济","143583","apac"],["fm","Micronesia","密克罗尼西亚","143591","apac"],["hk","Hong Kong","中国香港","143463","apac"],["id","Indonesia","印度尼西亚","143476","apac"],["in","India","印度","143467","apac"],["jp","Japan","日本","143462","apac"],["kg","Kyrgyzstan","吉尔吉斯斯坦","143586","apac"],["kh","Cambodia","柬埔寨","143579","apac"],["kr","South Korea","韩国","143466","apac"],["kz","Kazakhstan","哈萨克斯坦","143517","apac"],["la","Laos","老挝","143587","apac"],["lk","Sri Lanka","斯里兰卡","143486","apac"],["mm","Myanmar (Burma)","缅甸","143570","apac"],["mn","Mongolia","蒙古","143592","apac"],["mo","Macao","中国澳门","143515","apac"],["mv","Maldives","马尔代夫","143488","apac"],["my","Malaysia","马来西亚","143473","apac"],["np","Nepal","尼泊尔","143484","apac"],["nr","Nauru","瑙鲁","143606","apac"],["nz","New Zealand","新西兰","143461","apac"],["pg","Papua New Guinea","巴布亚新几内亚","143597","apac"],["ph","Philippines","菲律宾","143474","apac"],["pk","Pakistan","巴基斯坦","143477","apac"],["pw","Palau","帕劳","143595","apac"],["sb","Solomon Islands","所罗门群岛","143601","apac"],["sg","Singapore","新加坡","143464","apac"],["th","Thailand","泰国","143475","apac"],["tj","Tajikistan","塔吉克斯坦","143603","apac"],["tm","Turkmenistan","土库曼斯坦","143604","apac"],["to","Tonga","汤加","143608","apac"],["tw","Taiwan","中国台湾","143470","apac"],["uz","Uzbekistan","乌兹别克斯坦","143566","apac"],["vn","Vietnam","越南","143471","apac"],["vu","Vanuatu","瓦努阿图","143609","apac"],
+  ["al","Albania","阿尔巴尼亚","143575","eu"],["am","Armenia","亚美尼亚","143524","eu"],["at","Austria","奥地利","143445","eu"],["az","Azerbaijan","阿塞拜疆","143568","eu"],["ba","Bosnia & Herzegovina","波黑","143612","eu"],["be","Belgium","比利时","143446","eu"],["bg","Bulgaria","保加利亚","143526","eu"],["by","Belarus","白俄罗斯","143565","eu"],["ch","Switzerland","瑞士","143459","eu"],["cy","Cyprus","塞浦路斯","143557","eu"],["cz","Czechia","捷克","143489","eu"],["de","Germany","德国","143443","eu"],["dk","Denmark","丹麦","143458","eu"],["ee","Estonia","爱沙尼亚","143518","eu"],["es","Spain","西班牙","143454","eu"],["fi","Finland","芬兰","143447","eu"],["fr","France","法国","143442","eu"],["gb","United Kingdom","英国","143444","eu"],["ge","Georgia","格鲁吉亚","143615","eu"],["gr","Greece","希腊","143448","eu"],["hr","Croatia","克罗地亚","143494","eu"],["hu","Hungary","匈牙利","143482","eu"],["ie","Ireland","爱尔兰","143449","eu"],["is","Iceland","冰岛","143558","eu"],["it","Italy","意大利","143450","eu"],["lt","Lithuania","立陶宛","143520","eu"],["lu","Luxembourg","卢森堡","143451","eu"],["lv","Latvia","拉脱维亚","143519","eu"],["md","Moldova","摩尔多瓦","143523","eu"],["me","Montenegro","黑山","143619","eu"],["mk","North Macedonia","北马其顿","143530","eu"],["mt","Malta","马耳他","143521","eu"],["nl","Netherlands","荷兰","143452","eu"],["no","Norway","挪威","143457","eu"],["pl","Poland","波兰","143478","eu"],["pt","Portugal","葡萄牙","143453","eu"],["ro","Romania","罗马尼亚","143487","eu"],["rs","Serbia","塞尔维亚","143500","eu"],["ru","Russia","俄罗斯","143469","eu"],["se","Sweden","瑞典","143456","eu"],["si","Slovenia","斯洛文尼亚","143499","eu"],["sk","Slovakia","斯洛伐克","143496","eu"],["tr","Türkiye","土耳其","143480","eu"],["ua","Ukraine","乌克兰","143492","eu"],["xk","Kosovo","科索沃","143624","eu"],
+  ["ag","Antigua & Barbuda","安提瓜和巴布达","143540","am"],["ai","Anguilla","安圭拉","143538","am"],["ar","Argentina","阿根廷","143505","am"],["bb","Barbados","巴巴多斯","143541","am"],["bm","Bermuda","百慕大","143542","am"],["bo","Bolivia","玻利维亚","143556","am"],["br","Brazil","巴西","143503","am"],["bs","Bahamas","巴哈马","143539","am"],["bz","Belize","伯利兹","143555","am"],["ca","Canada","加拿大","143455","am"],["cl","Chile","智利","143483","am"],["co","Colombia","哥伦比亚","143501","am"],["cr","Costa Rica","哥斯达黎加","143495","am"],["dm","Dominica","多米尼克","143545","am"],["do","Dominican Rep.","多米尼加","143508","am"],["ec","Ecuador","厄瓜多尔","143509","am"],["gd","Grenada","格林纳达","143546","am"],["gt","Guatemala","危地马拉","143504","am"],["gy","Guyana","圭亚那","143553","am"],["hn","Honduras","洪都拉斯","143510","am"],["jm","Jamaica","牙买加","143511","am"],["kn","St. Kitts & Nevis","圣基茨和尼维斯","143548","am"],["ky","Cayman Islands","开曼群岛","143544","am"],["lc","St. Lucia","圣卢西亚","143549","am"],["ms","Montserrat","蒙特塞拉特","143547","am"],["mx","Mexico","墨西哥","143468","am"],["ni","Nicaragua","尼加拉瓜","143512","am"],["pa","Panama","巴拿马","143485","am"],["pe","Peru","秘鲁","143507","am"],["py","Paraguay","巴拉圭","143513","am"],["sr","Suriname","苏里南","143554","am"],["sv","El Salvador","萨尔瓦多","143506","am"],["tc","Turks & Caicos","特克斯和凯科斯","143552","am"],["tt","Trinidad & Tobago","特立尼达和多巴哥","143551","am"],["us","United States","美国","143441","am"],["uy","Uruguay","乌拉圭","143514","am"],["vc","St. Vincent","圣文森特","143550","am"],["ve","Venezuela","委内瑞拉","143502","am"],["vg","British Virgin Is.","英属维尔京群岛","143543","am"],
+  ["ae","UAE","阿联酋","143481","mea"],["ao","Angola","安哥拉","143564","mea"],["bf","Burkina Faso","布基纳法索","143578","mea"],["bh","Bahrain","巴林","143559","mea"],["bj","Benin","贝宁","143576","mea"],["bw","Botswana","博茨瓦纳","143525","mea"],["cd","Congo - Kinshasa","刚果（金）","143613","mea"],["cg","Congo - Brazzaville","刚果（布）","143582","mea"],["ci","Côte d’Ivoire","科特迪瓦","143527","mea"],["cm","Cameroon","喀麦隆","143574","mea"],["cv","Cape Verde","佛得角","143580","mea"],["dz","Algeria","阿尔及利亚","143563","mea"],["eg","Egypt","埃及","143516","mea"],["ga","Gabon","加蓬","143614","mea"],["gh","Ghana","加纳","143573","mea"],["gm","Gambia","冈比亚","143584","mea"],["gw","Guinea-Bissau","几内亚比绍","143585","mea"],["il","Israel","以色列","143491","mea"],["iq","Iraq","伊拉克","143617","mea"],["jo","Jordan","约旦","143528","mea"],["ke","Kenya","肯尼亚","143529","mea"],["kw","Kuwait","科威特","143493","mea"],["lb","Lebanon","黎巴嫩","143497","mea"],["lr","Liberia","利比里亚","143588","mea"],["ly","Libya","利比亚","143567","mea"],["ma","Morocco","摩洛哥","143620","mea"],["mg","Madagascar","马达加斯加","143531","mea"],["ml","Mali","马里","143532","mea"],["mr","Mauritania","毛里塔尼亚","143590","mea"],["mu","Mauritius","毛里求斯","143533","mea"],["mw","Malawi","马拉维","143589","mea"],["mz","Mozambique","莫桑比克","143593","mea"],["na","Namibia","纳米比亚","143594","mea"],["ne","Niger","尼日尔","143534","mea"],["ng","Nigeria","尼日利亚","143561","mea"],["om","Oman","阿曼","143562","mea"],["qa","Qatar","卡塔尔","143498","mea"],["rw","Rwanda","卢旺达","143621","mea"],["sa","Saudi Arabia","沙特阿拉伯","143479","mea"],["sc","Seychelles","塞舌尔","143599","mea"],["sl","Sierra Leone","塞拉利昂","143600","mea"],["sn","Senegal","塞内加尔","143535","mea"],["st","São Tomé & Príncipe","圣多美和普林西比","143598","mea"],["sz","Eswatini","斯威士兰","143602","mea"],["td","Chad","乍得","143581","mea"],["tn","Tunisia","突尼斯","143536","mea"],["tz","Tanzania","坦桑尼亚","143572","mea"],["ug","Uganda","乌干达","143537","mea"],["ye","Yemen","也门","143571","mea"],["za","South Africa","南非","143472","mea"],["zm","Zambia","赞比亚","143622","mea"],["zw","Zimbabwe","津巴布韦","143605","mea"]
+];
+
+const REGIONS = [["all","全部"],["apac","亚太"],["eu","欧洲"],["am","美洲"],["mea","中东与非洲"]];
+const qEl = document.getElementById("q");
+const chipsEl = document.getElementById("chips");
+const countEl = document.getElementById("count");
+const contentEl = document.getElementById("content");
+const toastEl = document.getElementById("toast");
+const stickyWrap = document.getElementById("stickyWrap");
+
+let currentRegion = "all";
+
+// SVG 图标
+const iconOpen = `<svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>`;
+const iconCopy = `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`;
+const iconLink = `<svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>`;
+
+function makeItmsLink(dsf, cc) {
+  return `itms-apps://itunes.apple.com/WebObjects/MZStore.woa/wa/resetAndRedirect?dsf=${dsf}&cc=${cc}`;
+}
+function makeHttpsLink(cc) {
+  return `https://apps.apple.com/${cc}/app/?itscg=30200&itsct=apps_box_link`;
+}
+function showToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(()=>toastEl.classList.remove("show"),1600);
+}
+async function copyText(text, successTip) {
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast(successTip);
+  } catch {
+    const v = prompt("复制链接：", text);
+    if(v!==null) showToast("已读取");
+  }
+}
+const isAppleDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+// 地区筛选按钮
+REGIONS.forEach(([key, label]) => {
+  const b = document.createElement("button");
+  b.className = `chip${key === currentRegion ? " active" : ""}`;
+  b.textContent = label;
+  b.onclick = () => {
+    currentRegion = key;
+    document.querySelectorAll(".chip").forEach(c => c.classList.toggle("active", c.dataset.region === key));
+    render();
+  };
+  b.dataset.region = key;
+  chipsEl.appendChild(b);
+});
+
+// 滚动监听，吸顶阴影
+window.addEventListener("scroll", ()=>{
+  stickyWrap.classList.toggle("shadow", window.scrollY > 4);
+})
+
+function render() {
+  const q = qEl.value.trim().toLowerCase();
+  const filtered = DATA.filter(([cc, en, cn, dsf, region]) => {
+    if (currentRegion !== "all" && region !== currentRegion) return false;
+    if (!q) return true;
+    return (cc + " " + en + " " + cn + " " + dsf).toLowerCase().includes(q);
+  });
+
+  contentEl.innerHTML = "";
+  countEl.textContent = `共 ${DATA.length} 个店面 · 当前显示 ${filtered.length} 个`;
+
+  if (!filtered.length) {
+    contentEl.innerHTML = `<div class="empty">没有匹配结果，换个关键词试试</div>`;
+    return;
+  }
+
+  REGIONS.filter(([k]) => k !== "all").forEach(([key, label]) => {
+    const group = filtered.filter(it => it[4] === key);
+    if (!group.length) return;
+
+    const h2 = document.createElement("h2");
+    h2.className = "groupTitle";
+    h2.innerHTML = `${label} <span class="n">${group.length}</span>`;
+    contentEl.appendChild(h2);
+
+    const list = document.createElement("div");
+    list.className = "list";
+    const frag = document.createDocumentFragment();
+
+    group.forEach(([cc, en, cn, dsf]) => {
+      const itmsLink = makeItmsLink(dsf, cc);
+      const httpsLink = makeHttpsLink(cc);
+
+      const item = document.createElement("div");
+      item.className = "item";
+      item.innerHTML = `
+        <div class="info">
+          <div class="name">${cn} <em>${en}</em></div>
+          <div class="meta">
+            <span class="tag" data-val="${cc}">cc: ${cc}</span>
+            <span class="tag" data-val="${dsf}">dsf: ${dsf}</span>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn-open">${iconOpen} 打开</button>
+          <button class="btn-copy-itms secondary">${iconCopy} 唤起链接</button>
+          <button class="btn-copy-https secondary">${iconLink} 网页链接</button>
+        </div>
+      `;
+
+      // 唤起
+      item.querySelector(".btn-open").onclick = () => {
+        if (!isAppleDevice) {
+          showToast("⚠️ 需要 iPhone / iPad Safari 才能唤起 App Store");
+        } else {
+          window.location.href = itmsLink;
+        }
+      };
+      // 复制 itms
+      item.querySelector(".btn-copy-itms").onclick = ()=>copyText(itmsLink, "✅ 已复制唤起链接");
+      // 复制 https
+      item.querySelector(".btn-copy-https").onclick = ()=>copyText(httpsLink, "✅ 已复制网页链接");
+      // 点击标签复制 cc / dsf
+      item.querySelectorAll(".meta .tag").forEach(tag=>{
+        tag.onclick = ()=>copyText(tag.dataset.val, `✅ 已复制：${tag.dataset.val}`);
+      })
+
+      frag.appendChild(item);
+    });
+    list.appendChild(frag);
+    contentEl.appendChild(list);
+  });
+}
+
+document.getElementById("btnClear").onclick = () => {
+  qEl.value = "";
+  currentRegion = "all";
+  document.querySelectorAll(".chip").forEach(c => c.classList.toggle("active", c.dataset.region === "all"));
+  render();
+  qEl.focus();
+};
+qEl.addEventListener("input", render);
+// ESC 清空
+document.addEventListener("keydown", (e)=>{
+  if(e.key === "Escape") {
+    qEl.value = "";
+    currentRegion = "all";
+    document.querySelectorAll(".chip").forEach(c => c.classList.toggle("active", c.dataset.region === "all"));
+    render();
+    qEl.blur();
+  }
+})
+
+render();
+</script>
+</body>
+</html>
+<!-- （注：内容由AI生成） -->
